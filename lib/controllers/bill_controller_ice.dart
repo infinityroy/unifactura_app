@@ -1,13 +1,15 @@
-import 'package:unifactura_app/services/bill_service.dart';
 
-class BillControllerIce{
 
-  final BillService _billServiceIce; 
+import 'package:unifactura_app/services/electric/electric_bill_service.dart';
 
-  BillControllerIce(this._billServiceIce); 
+class ElectricBillController{
+
+  final ElectricBillService _electricBillService;
+
+  ElectricBillController(this._electricBillService);
 
   Future<double> getBillAmount(int serviceNumber) async {
-    return await _billServiceIce.getBillAmount(serviceNumber); 
+    return await _electricBillService.getBillAmount(serviceNumber); 
   }
 
 }

@@ -1,12 +1,11 @@
-
 import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:unifactura_app/services/bill_service.dart';
+import 'package:unifactura_app/services/electric/electric_bill_service.dart';
 import 'package:http/http.dart' as http;
 
-class BillServiceIce implements BillService {
+class IceBillService implements ElectricBillService {
 
   @override
   Future<double> getBillAmount(int serviceNumber) async {
@@ -35,4 +34,3 @@ class BillServiceIce implements BillService {
     return resp;
   }
 }
-
