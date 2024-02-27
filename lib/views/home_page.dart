@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:unifactura_app/widgets/service_card.dart';
+import 'package:unifactura_app/widgets/service_info_list.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -24,10 +24,10 @@ class NavBar extends StatefulWidget {
 class _NavBarState
     extends State<NavBar> {
   int _selectedIndex = 0;
-  static const TextStyle optionStyle =
-      TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
+  static const TextStyle optionStyle = TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
+  
   static const List<Widget> _widgetOptions = <Widget>[
-    ServiceList(title: "Anagrafica"),
+    ServiceInfoList(title: "Anagrafica"),
     Text(
       'Index 1: Business',
       style: optionStyle,

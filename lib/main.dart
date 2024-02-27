@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
-import 'package:unifactura_app/views/home_page.dart';
+import 'package:http/http.dart' as http;
+import 'package:unifactura_app/widgets/service_info_any.dart';
 
 void main() {
   runApp(const MyApp());
@@ -33,9 +36,54 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const HomePage()
+      home: const ListaWidget()
     );
   }
 }
+
+
+class ListaWidget extends StatelessWidget {
+  const ListaWidget({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Servicios'),
+      ),
+      body: ListView( // Utiliza un ListView para mostrar una lista
+        children: const [
+          
+          ItemWidget<String>(futureFunction: fetchMFacturadoIce,serviceNumber: 609747,company: 'ICE',name: 'Sabana Larga',),
+          
+          // Puedes agregar más ListTile según sea necesario
+        ],
+      ),
+    );
+  }
+}
+
+
+
+Future<String> fetchMFacturadoIce(int numberService) async {
+    final response = await http.get(
+      Uri.parse('https://apps.grupoice.com/FacturaElectrica/api/FactElecICE/?nise=$numberService'),
+    );
+
+    if (response.statusCode == 200) {
+      final jsonData = jsonDecode(response.body);
+      final data = jsonData['data'];
+      if (data != null && data.isNotEmpty) {
+        final montos = data.map<String>((entry) => '₡${entry['mfacturado']}').toList();
+        return montos.join(' ');
+      } else {
+        throw Exception('No se encontraron datos');
+      }
+    } else {
+      throw Exception('Fallo al cargar los datos: ${response.statusCode}');
+    }
+}
+
+
 
 
