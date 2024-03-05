@@ -3,13 +3,19 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:unifactura_app/widgets/service_info_any.dart';
+import 'package:flutter/services.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  Map<String, dynamic> datos = await cargarDatosImportantes();
+  runApp(MyApp(datos: datos));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final Map<String, dynamic> datos;
+  const MyApp({super.key, required this.datos});
+
+  
 
   // This widget is the root of your application.
   @override
@@ -36,14 +42,16 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const ListaWidget()
+      home: ListaWidget(datos: datos),
     );
   }
 }
 
 
 class ListaWidget extends StatelessWidget {
-  const ListaWidget({super.key});
+  final Map<String, dynamic> datos;
+
+  const ListaWidget({super.key, required this.datos});
 
   @override
   Widget build(BuildContext context) {
@@ -51,19 +59,60 @@ class ListaWidget extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Servicios'),
       ),
-      body: ListView( // Utiliza un ListView para mostrar una lista
-        children: const [
-          
-          ItemWidget<String>(futureFunction: fetchMFacturadoIce,serviceNumber: 609747,company: 'ICE',name: 'Sabana Larga',),
-          
-          // Puedes agregar más ListTile según sea necesario
+      body: ListView(
+        children: [
+          ItemWidget<String>(
+            futureFunction: fetchMFacturadoIce,
+            serviceNumber: datos["ice_vainilla"], 
+            company: 'ICE Eléctrico',
+            name: 'Vainilla',
+          ),
+          ItemWidget<String>(
+            futureFunction: fetchMFacturadoIce,
+            serviceNumber: datos["ice_sabana"] as int, 
+            company: 'ICE Eléctrico',
+            name: 'Sabana Larga',
+          ),
+          ItemWidget<String>(
+            futureFunction: fetchMFacturadoAya,
+            serviceNumber: datos["aya_vainilla"] as int, 
+            company: 'AYA',
+            name: 'Vainilla',
+          ),
+          ItemWidget<String>(
+            futureFunction: fetchMFacturadoAya,
+            serviceNumber: datos["aya_sabana"] as int,
+            company: 'AYA',
+            name: 'Sabana Larga',
+          ),
+          ItemWidget<String>(
+            futureFunction: fetchMFacturadoTelecable,
+            serviceNumber: datos["telecable"] as int, 
+            company: 'Telecable',
+            name: 'Internet',
+          ),
+          ItemWidget<String>(
+            futureFunction: fetchMFacturadoIceTelefonico,
+            serviceNumber: datos["telefono_casa"] as int,
+            company: 'ICE Teléfono',
+            name: 'Telefono de casa',
+          ),
+          ItemWidget<String>(
+            futureFunction: fetchMFacturadoIceTelefonico,
+            serviceNumber: datos["celular"] as int, 
+            company: 'ICE Celular',
+            name: 'Telefono Celular',
+          ),
         ],
       ),
     );
   }
 }
 
-
+Future<Map<String, dynamic>> cargarDatosImportantes() async {
+  String jsonString = await rootBundle.loadString('lib/service_numbers.json');
+  return json.decode(jsonString);
+}
 
 Future<String> fetchMFacturadoIce(int numberService) async {
     final response = await http.get(
@@ -77,13 +126,73 @@ Future<String> fetchMFacturadoIce(int numberService) async {
         final montos = data.map<String>((entry) => '₡${entry['mfacturado']}').toList();
         return montos.join(' ');
       } else {
-        throw Exception('No se encontraron datos');
+        return '₡0';
       }
     } else {
       throw Exception('Fallo al cargar los datos: ${response.statusCode}');
     }
 }
 
+
+
+Future<String> fetchMFacturadoTelecable(int numberService) async {
+  final response = await http.post(
+    Uri.parse('https://pago.telecablecr.com/Pagos/ConsultarMensualidades/?contrato=$numberService'),
+  );
+  if (response.statusCode == 200) {
+    final jsonData = jsonDecode(response.body);
+    final data = jsonData['Result'];
+    if (data != null && data.isNotEmpty) {
+      final montos = data.map<String>((entry) => '₡${entry['deuda']}').toList();
+      return montos.join(' ');
+    } else {
+      return '₡0';
+    }
+  } else {
+    throw Exception('Fallo al cargar los datos: ${response.statusCode}');
+  }
+}
+
+Future<String> fetchMFacturadoAya(int numberService) async {
+  // TODO [Parse HTML Response file]
+  final response = await http.post(
+    Uri.parse('https://websolution.aya.go.cr/ConsultaFacturacion/?nise=$numberService'),
+  );
+  if (response.statusCode == 200) {
+    final jsonData = jsonDecode(response.body);
+    final data = jsonData['Result'];
+    if (data != null && data.isNotEmpty) {
+      final montos = data.map<String>((entry) => '₡${entry['deuda']}').toList();
+      return montos.join(' ');
+    } else {
+      return '₡0';
+    }
+  } else {
+    throw Exception('Fallo al cargar los datos: ${response.statusCode}');
+  }
+}
+
+
+Future<String> fetchMFacturadoIceTelefonico(int numberService) async {
+  final response = await http.post(
+    Uri.parse('https://sar.arkkosoft.com/sar/icetel/servicio/obtenerFacturas/?id=$numberService&fav=false'),
+  );
+  if (response.statusCode == 200) {
+    final jsonData = jsonDecode(response.body);
+    final data = jsonData['datos'];
+    if (data != null && data.isNotEmpty) {
+      final montos = data.map<String>((entry) => '₡${entry['deuda']}').toList();
+      return montos.join(' ');
+    } else {
+      return '₡0';
+    }
+  } else {
+    throw Exception('Fallo al cargar los datos: ${response.statusCode}');
+  }
+}
+
+// Telefono casa Patricia
+//https://sar.arkkosoft.com/sar/icetel/servicio/obtenerFacturas/?id=22260653&fav=false
 
 
 
