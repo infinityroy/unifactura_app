@@ -1,6 +1,23 @@
 # unifactura_app
 
-A new Flutter project.
+A Flutter project.
+See all amount of your services per month, only in Costa Rica.
+Create a json with  the name and the number of service
+
+{
+    "Service_name": 123 
+}
+
+edit the  file lib/main.dart and add the service name. Edit the service
+
+## ItemWidget<String>(
+#            futureFunction: fetchMFacturadoIceTelefonico,
+#            serviceNumber: datos["Service_name"] as int, 
+#            company: 'ICE Celular',
+#            name: 'Telefono Celular',
+#          ),
+
+Run app.
 
 ## Getting Started
 
